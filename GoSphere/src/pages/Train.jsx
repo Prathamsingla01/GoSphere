@@ -215,52 +215,66 @@ function TrainSearch({ onSearch }) {
           <span>GOSPHERE RAIL</span>
         </div>
 
-        <div className="search-fields">
-          <div className="field">
-            <label>From</label>
-            <div className="field-input">
-              <MapPin size={16} />
-              <input
-                type="text"
-                placeholder="Delhi"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-              />
+        <div className="search-body">
+          <div className="search-fields">
+            <div className="field">
+              <label>From</label>
+              <div className="field-input">
+                <MapPin size={16} />
+                <input
+                  type="text"
+                  placeholder="Delhi"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="swap-btn train-swap-btn"
+              onClick={handleSwap}
+              title="Swap stations"
+              aria-label="Swap stations"
+            >
+              <ArrowLeftRight size={18} color="#ffffff" />
+            </button>
+
+            <div className="field">
+              <label>To</label>
+              <div className="field-input">
+                <MapPin size={16} />
+                <input
+                  type="text"
+                  placeholder="Chandigarh"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label>Journey Date</label>
+              <div className="field-input">
+                <Calendar size={16} />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
-          <button className="swap-btn" onClick={handleSwap} title="Swap stations">
-            <ArrowLeftRight size={18} />
-          </button>
-
-          <div className="field">
-            <label>To</label>
-            <div className="field-input">
-              <MapPin size={16} />
-              <input
-                type="text"
-                placeholder="Chandigarh"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </div>
+          <div className="search-action-row">
+            <button
+              type="button"
+              className="search-btn train-search-btn"
+              onClick={handleSearchClick}
+            >
+              <Search size={18} color="#ffffff" /> <span style={{ color: "#ffffff" }}>Search Trains 🚆</span>
+            </button>
           </div>
-
-          <div className="field">
-            <label>Journey Date</label>
-            <div className="field-input">
-              <Calendar size={16} />
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <button className="search-btn" onClick={handleSearchClick}>
-            <Search size={18} /> Search Trains 🚆
-          </button>
         </div>
       </div>
     </section>
@@ -501,7 +515,6 @@ export default function Train() {
     <div className="train-page">
       <TrainHero />
       <TrainSearch onSearch={handleSearch} />
-
       {searched && (
         <TrainResults
           trains={trainsData}
