@@ -329,7 +329,7 @@
   background: repeating-linear-gradient(90deg, var(--rail-light) 0 6px, transparent 6px 12px);
 }
 
-.train-card-bottom { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
+.train-card-bottom { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 0; }
 .price-classes { display: flex; flex-direction: column; gap: 6px; }
 .price { font-weight: 700; color: var(--amber); font-size: 1rem; }
 .classes { font-size: 0.78rem; color: var(--muted); max-width: 240px; }
@@ -349,88 +349,6 @@
 .score-label { font-size: 0.68rem; color: var(--muted); width: 92px; flex-shrink: 0; }
 .score-track { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
 .score-fill { height: 100%; background: linear-gradient(90deg, var(--rail-light), var(--signal)); border-radius: 999px; }
-
-.view-journey-btn {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%;
-  background: transparent;
-  border: 1px solid var(--rail-light);
-  color: var(--text);
-  padding: 11px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.view-journey-btn:hover { background: var(--rail); }
-
-/* ---------- MODAL ---------- */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(3,7,18,0.75);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-  z-index: 1000;
-}
-.modal-content {
-  background: var(--void-deep);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 32px;
-  max-width: 480px;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  position: relative;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-  text-align: left;
-}
-.modal-close {
-  position: absolute; top: 18px; right: 18px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  color: var(--text);
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-.modal-content h3 { font-size: 1.2rem; margin-bottom: 4px; }
-
-.timeline { margin: 24px 0; padding-left: 6px; }
-.timeline-row { display: flex; flex-direction: column; }
-.timeline-gap {
-  margin-left: 5px;
-  padding: 4px 0 4px 20px;
-  border-left: 2px dashed var(--rail-light);
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-.timeline-point { display: flex; align-items: center; gap: 12px; }
-.timeline-dot {
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--signal);
-  box-shadow: 0 0 10px var(--signal);
-  flex-shrink: 0;
-}
-.timeline-text { display: flex; flex-direction: column; }
-.timeline-station { font-weight: 600; font-size: 0.95rem; }
-.timeline-time { font-size: 0.78rem; color: var(--muted); }
-
-.modal-section { margin-bottom: 16px; }
-.modal-section h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px; }
-.modal-section p { font-size: 0.95rem; }
-.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-}
-.chip-facility { color: var(--signal); border-color: rgba(92, 214, 196, 0.3); }
 
 /* ---------- BENEFITS ---------- */
 .benefits-section { max-width: 1180px; margin: 0 auto; padding: 24px 24px 80px; text-align: center; }

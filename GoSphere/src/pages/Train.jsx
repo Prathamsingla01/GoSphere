@@ -5,12 +5,9 @@ import {
   Calendar,
   ArrowLeftRight,
   Search,
-  Zap,
   Wallet,
   Smile,
   Leaf,
-  X,
-  ChevronRight,
   Clock,
   Star,
 } from "lucide-react";
@@ -143,21 +140,6 @@ const trainsData = [
   },
 ];
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-function sortTrains(list, sortBy) {
-  const copy = [...list];
-  if (sortBy === "fastest") {
-    copy.sort((a, b) => a.durationMinutes - b.durationMinutes);
-  } else if (sortBy === "cheapest") {
-    copy.sort((a, b) => a.price - b.price);
-  } else {
-    copy.sort((a, b) => b.score.overall - a.score.overall);
-  }
-  return copy;
-}
 
 // ============================================
 // COMPONENT PARTS
@@ -190,6 +172,21 @@ function TrainHero() {
       </div>
     </section>
   );
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+function sortTrains(list, sortBy) {
+  const copy = [...list];
+  if (sortBy === "fastest") {
+    copy.sort((a, b) => a.durationMinutes - b.durationMinutes);
+  } else if (sortBy === "cheapest") {
+    copy.sort((a, b) => a.price - b.price);
+  } else {
+    copy.sort((a, b) => b.score.overall - a.score.overall);
+  }
+  return copy;
 }
 
 function TrainSearch({ onSearch }) {
@@ -312,7 +309,7 @@ function TravelScore({ score }) {
   );
 }
 
-function TrainCard({ train, onViewJourney }) {
+function TrainCard({ train }) {
   return (
     <div className="train-card">
       <div className="train-card-top">
@@ -347,10 +344,6 @@ function TrainCard({ train, onViewJourney }) {
         </div>
         <TravelScore score={train.score} />
       </div>
-
-      <button className="view-journey-btn" onClick={() => onViewJourney(train)}>
-        View Journey <ChevronRight size={16} />
-      </button>
     </div>
   );
 }
@@ -369,7 +362,7 @@ function SortBar({ sortBy, onSortChange }) {
           key={option.key}
           className={sortBy === option.key ? "sort-btn active" : "sort-btn"}
           onClick={() => onSortChange(option.key)}
-        >
+          >
           {option.label}
         </button>
       ))}
@@ -377,7 +370,7 @@ function SortBar({ sortBy, onSortChange }) {
   );
 }
 
-function TrainResults({ trains, sortBy, onSortChange, onViewJourney }) {
+function TrainResults({ trains, sortBy, onSortChange }) {
   const sortedTrains = sortTrains(trains, sortBy);
 
   return (
@@ -389,69 +382,10 @@ function TrainResults({ trains, sortBy, onSortChange, onViewJourney }) {
 
       <div className="train-list">
         {sortedTrains.map((train) => (
-          <TrainCard key={train.id} train={train} onViewJourney={onViewJourney} />
+          <TrainCard key={train.id} train={train} />
         ))}
       </div>
     </section>
-  );
-}
-
-function JourneyModal({ train, onClose }) {
-  if (!train) return null;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
-
-        <h3>{train.name}</h3>
-        <span className="train-number">Train No. {train.number}</span>
-
-        <div className="timeline">
-          {train.stops.map((stop) => (
-            <div className="timeline-row" key={stop.station}>
-              {stop.gap && <div className="timeline-gap">{stop.gap}</div>}
-              <div className="timeline-point">
-                <span className="timeline-dot" />
-                <div className="timeline-text">
-                  <span className="timeline-station">{stop.station}</span>
-                  <span className="timeline-time">{stop.time}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="modal-section">
-          <h4>Total Duration</h4>
-          <p>{train.durationLabel}</p>
-        </div>
-
-        <div className="modal-section">
-          <h4>Travel Classes</h4>
-          <div className="chip-row">
-            {train.classes.map((cls) => (
-              <span className="chip" key={cls}>
-                {cls}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="modal-section">
-          <h4>Facilities Onboard</h4>
-          <div className="chip-row">
-            {train.facilities.map((facility) => (
-              <span className="chip chip-facility" key={facility}>
-                {facility}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -473,8 +407,8 @@ function TrainBenefits() {
       text: "A balanced combination of cost and convenience.",
     },
   ];
-
   return (
+    
     <section className="benefits-section">
       <h2>Why Travel by Train?</h2>
       <div className="benefits-grid">
@@ -497,18 +431,9 @@ function TrainBenefits() {
 export default function Train() {
   const [searched, setSearched] = useState(false);
   const [sortBy, setSortBy] = useState("best");
-  const [selectedTrain, setSelectedTrain] = useState(null);
 
   function handleSearch() {
     setSearched(true);
-  }
-
-  function handleViewJourney(train) {
-    setSelectedTrain(train);
-  }
-
-  function handleCloseModal() {
-    setSelectedTrain(null);
   }
 
   return (
@@ -520,13 +445,10 @@ export default function Train() {
           trains={trainsData}
           sortBy={sortBy}
           onSortChange={setSortBy}
-          onViewJourney={handleViewJourney}
         />
       )}
 
       <TrainBenefits />
-
-      <JourneyModal train={selectedTrain} onClose={handleCloseModal} />
     </div>
   );
 }
