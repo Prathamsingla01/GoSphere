@@ -18,7 +18,6 @@ function Navbar() {
   function closeMenu() {
     setMenuOpen(false)
   }
-
   return (
     <header className="navbar">
       <div className="navbar-inner container">

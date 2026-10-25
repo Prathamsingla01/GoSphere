@@ -162,7 +162,7 @@ function TrainHero() {
 
       <div className="hero-content">
         <span className="eyebrow">
-          <TrainIcon size={14} style={{ display: 'inline', marginRight: 4, transform: 'translateY(1px)' }} /> GoSphere &middot; Train Travel
+          <TrainIcon size={14} style={{ display: 'inline', marginRight: 4, transform: 'translateY(1px)' }} /> GOSPHERE &middot; TRAIN TRAVEL
         </span>
         <h1>Your Journey Begins on the Right Track.</h1>
         <p>
