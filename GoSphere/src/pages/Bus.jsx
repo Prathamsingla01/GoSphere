@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { saveTrip, removeTrip } from "../redux/travelSlice.js";
+import BookingForm from "../components/BookingForm.jsx";
 import "../styles/Bus.css";
 
 // ============================================
@@ -282,7 +285,7 @@ function ComfortMeter({ factors }) {
   );
 }
 
-function BusCard({ bus, onViewDetails }) {
+function BusCard({ bus, onViewDetails, onSave, isSaved }) {
   return (
     <div className="bus-card glass-card">
       <div className="bus-card-top">
@@ -320,14 +323,29 @@ function BusCard({ bus, onViewDetails }) {
 
       <ComfortMeter factors={bus.comfortFactors} />
 
-      <button className="view-bus-btn" onClick={() => onViewDetails(bus)}>
-        View Bus Details
-      </button>
+      <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+        <button
+          type="button"
+          className={`btn-save ${isSaved ? "is-saved" : ""}`}
+          onClick={() => onSave(bus)}
+          title={isSaved ? "Remove from Shortlist" : "Save to Shortlist"}
+          style={{ flex: 1 }}
+        >
+          {isSaved ? "✓ Saved" : "★ Save"}
+        </button>
+        <button
+          className="view-bus-btn"
+          onClick={() => onViewDetails(bus)}
+          style={{ flex: 2, marginTop: 0 }}
+        >
+          View & Book →
+        </button>
+      </div>
     </div>
   );
 }
 
-function BusResults({ buses, onViewDetails }) {
+function BusResults({ buses, onViewDetails, onSave, savedTrips }) {
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("best");
 
@@ -402,16 +420,25 @@ function BusResults({ buses, onViewDetails }) {
         </div>
       ) : (
         <div className="bus-grid">
-          {displayBuses.map((bus) => (
-            <BusCard key={bus.id} bus={bus} onViewDetails={onViewDetails} />
-          ))}
+          {displayBuses.map((bus) => {
+            const isSaved = savedTrips.some((item) => item.id === `bus-${bus.id}`);
+            return (
+              <BusCard
+                key={bus.id}
+                bus={bus}
+                onViewDetails={onViewDetails}
+                onSave={onSave}
+                isSaved={isSaved}
+              />
+            );
+          })}
         </div>
       )}
     </section>
   );
 }
 
-function BusDetails({ bus, onClose }) {
+function BusDetails({ bus, onClose, onBook }) {
   if (!bus) return null;
 
   return (
@@ -471,8 +498,14 @@ function BusDetails({ bus, onClose }) {
           ))}
         </div>
 
-        <button className="search-btn" onClick={() => alert("Seat grid booking is currently in demo mode!")}>
-          Reserve Seats
+        <button
+          className="search-btn"
+          onClick={() => {
+            onClose();
+            onBook(bus);
+          }}
+        >
+          Book Seats Now →
         </button>
       </div>
     </div>
@@ -524,10 +557,46 @@ export default function Bus() {
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedBus, setSelectedBus] = useState(null);
   const [selectedBusType, setSelectedBusType] = useState("All");
+  const [bookingTrip, setBookingTrip] = useState(null);
+
+  // Redux Toolkit hooks
+  const dispatch = useDispatch();
+  const savedTrips = useSelector((state) => state.travel.savedTrips);
 
   const handleSearch = (busType) => {
     setSelectedBusType(busType);
     setHasSearched(true);
+  };
+
+  // Toggle saving bus journey in Redux store
+  const handleSave = (bus) => {
+    const tripId = `bus-${bus.id}`;
+    const alreadySaved = savedTrips.some((t) => t.id === tripId);
+    if (alreadySaved) {
+      dispatch(removeTrip(tripId));
+    } else {
+      dispatch(
+        saveTrip({
+          id: tripId,
+          name: `${bus.operator} (${bus.type})`,
+          mode: "Bus",
+          from: bus.from,
+          to: bus.to,
+          price: bus.price,
+          icon: "🚌",
+        })
+      );
+    }
+  };
+
+  const handleBook = (bus) => {
+    setBookingTrip({
+      name: `${bus.operator} (${bus.type})`,
+      mode: "Bus",
+      from: bus.from,
+      to: bus.to,
+      price: bus.price,
+    });
   };
 
   const busesToShow =
@@ -541,14 +610,30 @@ export default function Bus() {
       <BusSearch onSearch={handleSearch} />
 
       {hasSearched && (
-        <BusResults buses={busesToShow} onViewDetails={setSelectedBus} />
+        <BusResults
+          buses={busesToShow}
+          onViewDetails={setSelectedBus}
+          onSave={handleSave}
+          savedTrips={savedTrips}
+        />
       )}
 
       <BusBenefits />
 
       {selectedBus && (
-        <BusDetails bus={selectedBus} onClose={() => setSelectedBus(null)} />
+        <BusDetails
+          bus={selectedBus}
+          onClose={() => setSelectedBus(null)}
+          onBook={handleBook}
+        />
       )}
+
+      {/* Controlled booking form modal */}
+      <BookingForm
+        trip={bookingTrip}
+        isOpen={Boolean(bookingTrip)}
+        onClose={() => setBookingTrip(null)}
+      />
     </div>
   );
 }

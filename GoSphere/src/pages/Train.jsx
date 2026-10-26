@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { saveTrip, removeTrip } from "../redux/travelSlice.js";
+import BookingForm from "../components/BookingForm.jsx";
 import {
   Train as TrainIcon,
   MapPin,
@@ -309,7 +312,7 @@ function TravelScore({ score }) {
   );
 }
 
-function TrainCard({ train }) {
+function TrainCard({ train, onBook, onSave, isSaved }) {
   return (
     <div className="train-card">
       <div className="train-card-top">
@@ -344,6 +347,25 @@ function TrainCard({ train }) {
         </div>
         <TravelScore score={train.score} />
       </div>
+
+      {/* Action buttons for Redux Toolkit (Save) and Form Handling/Context API (Book) */}
+      <div className="card-actions-row">
+        <button
+          type="button"
+          className={`btn-save ${isSaved ? "is-saved" : ""}`}
+          onClick={() => onSave(train)}
+          title={isSaved ? "Remove from Shortlist" : "Save to Shortlist"}
+        >
+          {isSaved ? "✓ Saved" : "★ Save"}
+        </button>
+        <button
+          type="button"
+          className="btn-book-action"
+          onClick={() => onBook(train)}
+        >
+          Book Ticket →
+        </button>
+      </div>
     </div>
   );
 }
@@ -370,7 +392,7 @@ function SortBar({ sortBy, onSortChange }) {
   );
 }
 
-function TrainResults({ trains, sortBy, onSortChange }) {
+function TrainResults({ trains, sortBy, onSortChange, onBook, onSave, savedTrips }) {
   const sortedTrains = sortTrains(trains, sortBy);
 
   return (
@@ -381,9 +403,18 @@ function TrainResults({ trains, sortBy, onSortChange }) {
       </div>
 
       <div className="train-list">
-        {sortedTrains.map((train) => (
-          <TrainCard key={train.id} train={train} />
-        ))}
+        {sortedTrains.map((train) => {
+          const isSaved = savedTrips.some((item) => item.id === `train-${train.id}`);
+          return (
+            <TrainCard
+              key={train.id}
+              train={train}
+              onBook={onBook}
+              onSave={onSave}
+              isSaved={isSaved}
+            />
+          );
+        })}
       </div>
     </section>
   );
@@ -431,9 +462,45 @@ function TrainBenefits() {
 export default function Train() {
   const [searched, setSearched] = useState(false);
   const [sortBy, setSortBy] = useState("best");
+  const [bookingTrip, setBookingTrip] = useState(null);
+
+  // Redux Toolkit hooks
+  const dispatch = useDispatch();
+  const savedTrips = useSelector((state) => state.travel.savedTrips);
 
   function handleSearch() {
     setSearched(true);
+  }
+
+  // Toggle saving a train journey in Redux store
+  function handleSave(train) {
+    const tripId = `train-${train.id}`;
+    const alreadySaved = savedTrips.some((t) => t.id === tripId);
+    if (alreadySaved) {
+      dispatch(removeTrip(tripId));
+    } else {
+      dispatch(
+        saveTrip({
+          id: tripId,
+          name: train.name,
+          mode: "Train",
+          from: train.from,
+          to: train.to,
+          price: train.price,
+          icon: "🚆",
+        })
+      );
+    }
+  }
+
+  function handleBook(train) {
+    setBookingTrip({
+      name: train.name,
+      mode: "Train",
+      from: train.from,
+      to: train.to,
+      price: train.price,
+    });
   }
 
   return (
@@ -445,10 +512,20 @@ export default function Train() {
           trains={trainsData}
           sortBy={sortBy}
           onSortChange={setSortBy}
+          onBook={handleBook}
+          onSave={handleSave}
+          savedTrips={savedTrips}
         />
       )}
 
       <TrainBenefits />
+
+      {/* Controlled booking form modal */}
+      <BookingForm
+        trip={bookingTrip}
+        isOpen={Boolean(bookingTrip)}
+        onClose={() => setBookingTrip(null)}
+      />
     </div>
   );
 }

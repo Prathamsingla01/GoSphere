@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { saveTrip, removeTrip } from '../redux/travelSlice.js';
+import BookingForm from '../components/BookingForm.jsx';
 import '../styles/Flight.css';
 
 // ============================================
@@ -289,7 +292,7 @@ function FlightSearch({ onSearch }) {
   );
 }
 
-function FlightCard({ flight, badges, onViewDetails }) {
+function FlightCard({ flight, badges, onViewDetails, onSave, isSaved }) {
   const stopsLabel = flight.stops === 0 ? 'Non-stop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`;
 
   return (
@@ -341,15 +344,25 @@ function FlightCard({ flight, badges, onViewDetails }) {
 
       <div className="flight-card-bottom">
         <div className="flight-price">💰 ₹{flight.price.toLocaleString('en-IN')}</div>
-        <button className="btn btn-primary" onClick={() => onViewDetails(flight)}>
-          View Flight →
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            type="button"
+            className={`btn-save ${isSaved ? 'is-saved' : ''}`}
+            onClick={() => onSave(flight)}
+            title={isSaved ? 'Remove from Shortlist' : 'Save to Shortlist'}
+          >
+            {isSaved ? '✓ Saved' : '★ Save'}
+          </button>
+          <button className="btn btn-primary" onClick={() => onViewDetails(flight)}>
+            View Flight →
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-function FlightDetails({ flight, onClose }) {
+function FlightDetails({ flight, onClose, onBook }) {
   const stopsLabel = flight.stops === 0 ? 'Non-stop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`;
 
   return (
@@ -425,7 +438,15 @@ function FlightDetails({ flight, onClose }) {
 
         <div className="details-footer">
           <div className="flight-price">💰 ₹{flight.price.toLocaleString('en-IN')}</div>
-          <button className="btn btn-primary" onClick={() => alert("Booking functionality demo only!")}>Select Seats</button>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              onClose();
+              onBook(flight);
+            }}
+          >
+            Book This Flight →
+          </button>
         </div>
       </div>
     </div>
@@ -473,7 +494,7 @@ function FlightBenefits() {
   );
 }
 
-function FlightResults({ tripInfo }) {
+function FlightResults({ tripInfo, onSave, onBook, savedTrips }) {
   const [sortBy, setSortBy] = useState('default');
   const [selectedFlight, setSelectedFlight] = useState(null);
 
@@ -536,19 +557,28 @@ function FlightResults({ tripInfo }) {
         </div>
 
         <div className="flight-results-grid">
-          {sortedFlights.map((flight) => (
-            <FlightCard
-              key={flight.id}
-              flight={flight}
-              badges={getBadges(flight)}
-              onViewDetails={setSelectedFlight}
-            />
-          ))}
+          {sortedFlights.map((flight) => {
+            const isSaved = savedTrips.some((item) => item.id === `flight-${flight.id}`);
+            return (
+              <FlightCard
+                key={flight.id}
+                flight={flight}
+                badges={getBadges(flight)}
+                onViewDetails={setSelectedFlight}
+                onSave={onSave}
+                isSaved={isSaved}
+              />
+            );
+          })}
         </div>
       </div>
 
       {selectedFlight && (
-        <FlightDetails flight={selectedFlight} onClose={() => setSelectedFlight(null)} />
+        <FlightDetails
+          flight={selectedFlight}
+          onClose={() => setSelectedFlight(null)}
+          onBook={onBook}
+        />
       )}
     </section>
   );
@@ -561,10 +591,46 @@ function FlightResults({ tripInfo }) {
 export default function Flight() {
   const [hasSearched, setHasSearched] = useState(false);
   const [tripInfo, setTripInfo] = useState(null);
+  const [bookingTrip, setBookingTrip] = useState(null);
+
+  // Redux Toolkit hooks
+  const dispatch = useDispatch();
+  const savedTrips = useSelector((state) => state.travel.savedTrips);
 
   function handleSearch(searchDetails) {
     setTripInfo(searchDetails);
     setHasSearched(true);
+  }
+
+  // Toggle saving flight in Redux store
+  function handleSave(flight) {
+    const tripId = `flight-${flight.id}`;
+    const alreadySaved = savedTrips.some((t) => t.id === tripId);
+    if (alreadySaved) {
+      dispatch(removeTrip(tripId));
+    } else {
+      dispatch(
+        saveTrip({
+          id: tripId,
+          name: `${flight.airline} (${flight.flightNumber})`,
+          mode: 'Flight',
+          from: flight.from,
+          to: flight.to,
+          price: flight.price,
+          icon: '✈️',
+        })
+      );
+    }
+  }
+
+  function handleBook(flight) {
+    setBookingTrip({
+      name: `${flight.airline} (${flight.flightNumber})`,
+      mode: 'Flight',
+      from: flight.from,
+      to: flight.to,
+      price: flight.price,
+    });
   }
 
   return (
@@ -572,9 +638,23 @@ export default function Flight() {
       <FlightHero />
       <FlightSearch onSearch={handleSearch} />
 
-      {hasSearched && <FlightResults tripInfo={tripInfo} />}
+      {hasSearched && (
+        <FlightResults
+          tripInfo={tripInfo}
+          onSave={handleSave}
+          onBook={handleBook}
+          savedTrips={savedTrips}
+        />
+      )}
 
       <FlightBenefits />
+
+      {/* Controlled booking form modal */}
+      <BookingForm
+        trip={bookingTrip}
+        isOpen={Boolean(bookingTrip)}
+        onClose={() => setBookingTrip(null)}
+      />
     </div>
   );
 }
