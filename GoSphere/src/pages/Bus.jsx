@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchContext } from "../context/SearchContext.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { saveTrip, removeTrip } from "../redux/travelSlice.js";
 import BookingForm from "../components/BookingForm.jsx";
@@ -203,7 +204,7 @@ function BusSearch({ onSearch }) {
   }
 
   function handleSearchClick() {
-    onSearch(busType);
+    onSearch({ fromCity, toCity, date, busType });
   }
 
   return (
@@ -563,8 +564,12 @@ export default function Bus() {
   const dispatch = useDispatch();
   const savedTrips = useSelector((state) => state.travel.savedTrips);
 
-  const handleSearch = (busType) => {
-    setSelectedBusType(busType);
+  // Shared search context — stores the latest bus search
+  const { setLatestBusSearch } = useSearchContext();
+
+  const handleSearch = (searchValues) => {
+    setLatestBusSearch(searchValues);
+    setSelectedBusType(searchValues.busType);
     setHasSearched(true);
   };
 

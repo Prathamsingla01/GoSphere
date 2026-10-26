@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchContext } from "../context/SearchContext.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { saveTrip, removeTrip } from "../redux/travelSlice.js";
 import BookingForm from "../components/BookingForm.jsx";
@@ -204,7 +205,7 @@ function TrainSearch({ onSearch }) {
   }
 
   function handleSearchClick() {
-    onSearch();
+    onSearch({ from, to, date });
   }
 
   return (
@@ -468,7 +469,11 @@ export default function Train() {
   const dispatch = useDispatch();
   const savedTrips = useSelector((state) => state.travel.savedTrips);
 
-  function handleSearch() {
+  // Shared search context — stores the latest train search
+  const { setLatestSearch } = useSearchContext();
+
+  function handleSearch(searchValues) {
+    setLatestSearch(searchValues);
     setSearched(true);
   }
 

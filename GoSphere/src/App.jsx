@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './redux/store.js';
 import { AppProvider } from './context/AppContext.jsx';
+import { SearchProvider } from './context/SearchContext.jsx';
 
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
@@ -17,6 +18,8 @@ function App() {
   return (
     // Redux Toolkit Provider gives entire app access to Redux store
     <Provider store={store}>
+      {/* SearchContext Provider shares latest search info across pages */}
+      <SearchProvider>
       {/* Context API Provider gives entire app access to shared booking context */}
       <AppProvider>
         <Router>
@@ -38,6 +41,7 @@ function App() {
           </div>
         </Router>
       </AppProvider>
+      </SearchProvider>
     </Provider>
   );
 }

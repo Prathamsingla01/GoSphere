@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchContext } from '../context/SearchContext.jsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { saveTrip, removeTrip } from '../redux/travelSlice.js';
 import BookingForm from '../components/BookingForm.jsx';
@@ -597,7 +598,11 @@ export default function Flight() {
   const dispatch = useDispatch();
   const savedTrips = useSelector((state) => state.travel.savedTrips);
 
+  // Shared search context — stores the latest flight search
+  const { setLatestFlightSearch } = useSearchContext();
+
   function handleSearch(searchDetails) {
+    setLatestFlightSearch(searchDetails);
     setTripInfo(searchDetails);
     setHasSearched(true);
   }
