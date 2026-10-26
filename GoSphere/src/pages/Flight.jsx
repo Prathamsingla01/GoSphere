@@ -4,6 +4,7 @@ import { useAppContext } from '../context/AppContext.jsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { saveTrip, removeTrip } from '../redux/travelSlice.js';
 import BookingForm from '../components/BookingForm.jsx';
+import { validateManualDate } from '../utils/dateUtils.js';
 import '../styles/Flight.css';
 
 // ============================================
@@ -193,34 +194,66 @@ function FlightHero() {
 }
 
 function FlightSearch({ onSearch }) {
-  const [fromCity, setFromCity] = useState('Delhi (DEL)');
-  const [toCity, setToCity] = useState('Mumbai (BOM)');
-  const [date, setDate] = useState('');
-  const [adults, setAdults] = useState(1);
-  const [travelClass, setTravelClass] = useState('Economy');
+  const { latestFlightSearch, setLatestFlightSearch } = useSearchContext();
+  const [fromCity, setFromCity] = useState(latestFlightSearch?.fromCity || 'Delhi (DEL)');
+  const [toCity, setToCity] = useState(latestFlightSearch?.toCity || 'Mumbai (BOM)');
+  const [date, setDate] = useState(latestFlightSearch?.date || '');
+  const [adults, setAdults] = useState(latestFlightSearch?.adults || 1);
+  const [travelClass, setTravelClass] = useState(latestFlightSearch?.travelClass || 'Economy');
+  const [error, setError] = useState('');
 
   function handleSwap() {
     const temp = fromCity;
     setFromCity(toCity);
     setToCity(temp);
+    setError('');
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    onSearch({ fromCity, toCity, date, adults, travelClass });
+    const cleanFrom = fromCity.trim();
+    const cleanTo = toCity.trim();
+    if (!cleanFrom || !cleanTo) {
+      setError('Please enter both departure and destination cities.');
+      return;
+    }
+    if (cleanFrom.toLowerCase() === cleanTo.toLowerCase()) {
+      setError('Departure and destination cities must be different.');
+      return;
+    }
+
+    const dateResult = validateManualDate(date);
+    if (!dateResult.valid) {
+      setError(dateResult.error);
+      return;
+    }
+
+    setError('');
+    const searchDetails = {
+      fromCity: cleanFrom,
+      toCity: cleanTo,
+      date: dateResult.date,
+      adults,
+      travelClass,
+    };
+    setLatestFlightSearch(searchDetails);
+    onSearch(searchDetails);
   }
 
   return (
     <section id="flight-search" className="flight-search-section">
       <div className="container">
-        <form className="flight-search-card glass-card" onSubmit={handleSubmit}>
+        <form className="flight-search-card glass-card" onSubmit={handleSubmit} noValidate>
           <div className="search-row">
             <div className="search-field">
               <label>From</label>
               <input
                 type="text"
                 value={fromCity}
-                onChange={(e) => setFromCity(e.target.value)}
+                onChange={(e) => {
+                  setFromCity(e.target.value);
+                  setError('');
+                }}
                 placeholder="Delhi (DEL)"
               />
             </div>
@@ -239,7 +272,10 @@ function FlightSearch({ onSearch }) {
               <input
                 type="text"
                 value={toCity}
-                onChange={(e) => setToCity(e.target.value)}
+                onChange={(e) => {
+                  setToCity(e.target.value);
+                  setError('');
+                }}
                 placeholder="Mumbai (BOM)"
               />
             </div>
@@ -249,9 +285,13 @@ function FlightSearch({ onSearch }) {
             <div className="search-field">
               <label>Departure Date</label>
               <input
-                type="date"
+                type="text"
+                placeholder="DD-MM-YYYY"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setError('');
+                }}
               />
             </div>
 
@@ -284,6 +324,12 @@ function FlightSearch({ onSearch }) {
               </div>
             </div>
           </div>
+
+          {error && (
+            <p style={{ color: '#f87171', fontSize: '0.85rem', marginTop: '10px' }} role="alert">
+              {error}
+            </p>
+          )}
 
           <button type="submit" className="btn btn-primary search-submit">
             Search Flights
@@ -600,7 +646,7 @@ export default function Flight() {
   const savedTrips = useSelector((state) => state.travel.savedTrips);
 
   // Shared search context — stores the latest flight search
-  const { setLatestFlightSearch } = useSearchContext();
+  const { latestFlightSearch, setLatestFlightSearch } = useSearchContext();
   const { recordSearch, recordSeenTicket } = useAppContext();
 
   function handleSearch(searchDetails) {
@@ -648,13 +694,19 @@ export default function Flight() {
       from: flight.from,
       to: flight.to,
       price: flight.price,
+      depTime: flight.departureTime,
+      arrTime: flight.arrivalTime,
+      classes: ['Economy', 'Premium Economy', 'Business'],
     });
   }
 
   return (
     <div className="flight-page">
       <FlightHero />
-      <FlightSearch onSearch={handleSearch} />
+      <FlightSearch
+        key={latestFlightSearch ? `${latestFlightSearch.fromCity}-${latestFlightSearch.toCity}-${latestFlightSearch.date}` : 'flight-search'}
+        onSearch={handleSearch}
+      />
 
       {hasSearched && (
         <FlightResults
@@ -669,6 +721,7 @@ export default function Flight() {
 
       {/* Controlled booking form modal */}
       <BookingForm
+        key={bookingTrip ? `${bookingTrip.mode}-${bookingTrip.name}-${bookingTrip.price}` : 'booking-modal'}
         trip={bookingTrip}
         isOpen={Boolean(bookingTrip)}
         onClose={() => setBookingTrip(null)}

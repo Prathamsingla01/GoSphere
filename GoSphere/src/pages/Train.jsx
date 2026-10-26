@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { saveTrip, removeTrip } from "../redux/travelSlice.js";
 import BookingForm from "../components/BookingForm.jsx";
+import { validateManualDate } from "../utils/dateUtils.js";
 import {
   Train as TrainIcon,
   MapPin,
@@ -195,23 +196,48 @@ function sortTrains(list, sortBy) {
 }
 
 function TrainSearch({ onSearch }) {
-  const [from, setFrom] = useState("Delhi");
-  const [to, setTo] = useState("Chandigarh");
-  const [date, setDate] = useState("");
+  const { latestSearch, setLatestSearch } = useSearchContext();
+  const [from, setFrom] = useState(latestSearch?.from || "Delhi");
+  const [to, setTo] = useState(latestSearch?.to || "Chandigarh");
+  const [date, setDate] = useState(latestSearch?.date || "");
+  const [error, setError] = useState("");
 
   function handleSwap() {
     const temp = from;
     setFrom(to);
     setTo(temp);
+    setError("");
   }
 
-  function handleSearchClick() {
-    onSearch({ from, to, date });
+  function handleSubmit(e) {
+    e.preventDefault();
+    const cleanFrom = from.trim();
+    const cleanTo = to.trim();
+
+    if (!cleanFrom || !cleanTo) {
+      setError("Please enter both departure and destination stations.");
+      return;
+    }
+    if (cleanFrom.toLowerCase() === cleanTo.toLowerCase()) {
+      setError("Departure and destination stations must be different.");
+      return;
+    }
+
+    const dateResult = validateManualDate(date);
+    if (!dateResult.valid) {
+      setError(dateResult.error);
+      return;
+    }
+
+    setError("");
+    const searchData = { from: cleanFrom, to: cleanTo, date: dateResult.date };
+    setLatestSearch(searchData);
+    onSearch(searchData);
   }
 
   return (
     <section className="search-section">
-      <div className="search-card">
+      <form className="search-card" onSubmit={handleSubmit} noValidate>
         <div className="ticket-strip">
           <span>BOARDING PASS</span>
           <span>GOSPHERE RAIL</span>
@@ -220,14 +246,18 @@ function TrainSearch({ onSearch }) {
         <div className="search-body">
           <div className="search-fields">
             <div className="field">
-              <label>From</label>
+              <label htmlFor="train-from">From</label>
               <div className="field-input">
                 <MapPin size={16} />
                 <input
+                  id="train-from"
                   type="text"
                   placeholder="Delhi"
                   value={from}
-                  onChange={(e) => setFrom(e.target.value)}
+                  onChange={(e) => {
+                    setFrom(e.target.value);
+                    setError("");
+                  }}
                 />
               </div>
             </div>
@@ -243,42 +273,56 @@ function TrainSearch({ onSearch }) {
             </button>
 
             <div className="field">
-              <label>To</label>
+              <label htmlFor="train-to">To</label>
               <div className="field-input">
                 <MapPin size={16} />
                 <input
+                  id="train-to"
                   type="text"
                   placeholder="Chandigarh"
                   value={to}
-                  onChange={(e) => setTo(e.target.value)}
+                  onChange={(e) => {
+                    setTo(e.target.value);
+                    setError("");
+                  }}
                 />
               </div>
             </div>
 
             <div className="field">
-              <label>Journey Date</label>
+              <label htmlFor="train-date">Journey Date</label>
               <div className="field-input">
                 <Calendar size={16} />
                 <input
-                  type="date"
+                  id="train-date"
+                  type="text"
+                  placeholder="DD-MM-YYYY"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={(e) => {
+                    setDate(e.target.value);
+                    setError("");
+                  }}
                 />
               </div>
             </div>
           </div>
 
+          {error && (
+            <p style={{ color: "#f87171", fontSize: "0.85rem", marginTop: "12px" }} role="alert">
+              {error}
+            </p>
+          )}
+
           <div className="search-action-row">
             <button
-              type="button"
+              type="submit"
               className="search-btn train-search-btn"
-              onClick={handleSearchClick}
             >
               <Search size={18} color="#ffffff" /> <span style={{ color: "#ffffff" }}>Search Trains 🚆</span>
             </button>
           </div>
         </div>
-      </div>
+      </form>
     </section>
   );
 }
@@ -471,7 +515,7 @@ export default function Train() {
   const savedTrips = useSelector((state) => state.travel.savedTrips);
 
   // Shared search context — stores the latest train search
-  const { setLatestSearch } = useSearchContext();
+  const { latestSearch, setLatestSearch } = useSearchContext();
   const { recordSearch, recordSeenTicket } = useAppContext();
 
   function handleSearch(searchValues) {
@@ -510,20 +554,25 @@ export default function Train() {
   }
 
   function handleBook(train) {
-    recordSeenTicket(train);
     setBookingTrip({
       name: train.name,
       mode: "Train",
       from: train.from,
       to: train.to,
       price: train.price,
+      depTime: train.depTime,
+      arrTime: train.arrTime,
+      classes: train.classes,
     });
   }
 
   return (
     <div className="train-page">
       <TrainHero />
-      <TrainSearch onSearch={handleSearch} />
+      <TrainSearch
+        key={latestSearch ? `${latestSearch.from}-${latestSearch.to}-${latestSearch.date}` : 'train-search'}
+        onSearch={handleSearch}
+      />
       {searched && (
         <TrainResults
           trains={trainsData}
@@ -539,6 +588,7 @@ export default function Train() {
 
       {/* Controlled booking form modal */}
       <BookingForm
+        key={bookingTrip ? `${bookingTrip.mode}-${bookingTrip.name}-${bookingTrip.price}` : 'booking-modal'}
         trip={bookingTrip}
         isOpen={Boolean(bookingTrip)}
         onClose={() => setBookingTrip(null)}

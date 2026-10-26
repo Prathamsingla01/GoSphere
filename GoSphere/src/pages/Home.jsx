@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import ActiveBookingBanner from '../components/ActiveBookingBanner.jsx'
+import { useSearchContext } from '../context/SearchContext.jsx'
 import '../styles/Home.css'
 
 // ============================================
@@ -260,6 +260,86 @@ function WhyGoSphere() {
 }
 
 // ============================================
+// RECENT SEARCHES COMPONENTS (Evaluation 2)
+// ============================================
+
+function RecentTrainSearch() {
+  const { latestSearch } = useSearchContext();
+
+  if (!latestSearch) return null;
+
+  return (
+    <section className="section recent-search-section">
+      <div className="container">
+        <div className="recent-search-card recent-train">
+          <div className="recent-search-icon" aria-hidden="true">🚆</div>
+          <div className="recent-search-copy">
+            <span className="eyebrow">YOUR RECENT TRAIN SEARCH</span>
+            <h2>{latestSearch.from} <span aria-hidden="true">→</span> {latestSearch.to}</h2>
+            <p>Journey date: {latestSearch.date}</p>
+          </div>
+          <Link className="btn-primary recent-search-button" to="/train">
+            Search Again <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RecentFlightSearch() {
+  const { latestFlightSearch } = useSearchContext();
+
+  if (!latestFlightSearch) return null;
+
+  return (
+    <section className="section recent-search-section">
+      <div className="container">
+        <div className="recent-search-card recent-flight">
+          <div className="recent-search-icon" aria-hidden="true">✈️</div>
+          <div className="recent-search-copy">
+            <span className="eyebrow">YOUR RECENT FLIGHT SEARCH</span>
+            <h2>{latestFlightSearch.fromCity} <span aria-hidden="true">→</span> {latestFlightSearch.toCity}</h2>
+            <p>
+              {latestFlightSearch.date ? `Journey date: ${latestFlightSearch.date}` : 'Any date'} · {latestFlightSearch.adults} passenger{latestFlightSearch.adults > 1 ? 's' : ''} · {latestFlightSearch.travelClass}
+            </p>
+          </div>
+          <Link className="btn-primary recent-search-button" to="/flight">
+            Search Again <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RecentBusSearch() {
+  const { latestBusSearch } = useSearchContext();
+
+  if (!latestBusSearch) return null;
+
+  return (
+    <section className="section recent-search-section">
+      <div className="container">
+        <div className="recent-search-card recent-bus">
+          <div className="recent-search-icon" aria-hidden="true">🚌</div>
+          <div className="recent-search-copy">
+            <span className="eyebrow">YOUR RECENT BUS SEARCH</span>
+            <h2>{latestBusSearch.fromCity} <span aria-hidden="true">→</span> {latestBusSearch.toCity}</h2>
+            <p>
+              {latestBusSearch.date ? `Journey date: ${latestBusSearch.date}` : 'Any date'} · Bus type: {latestBusSearch.busType}
+            </p>
+          </div>
+          <Link className="btn-primary recent-search-button" to="/bus">
+            Search Again <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================
 // MAIN PAGE COMPONENT
 // ============================================
 
@@ -267,8 +347,9 @@ function Home() {
   return (
     <div className="home-page">
       <Hero />
-      {/* Context API Active Booking Banner rendered under Start Exploring section */}
-      <ActiveBookingBanner />
+      <RecentTrainSearch />
+      <RecentFlightSearch />
+      <RecentBusSearch />
       <TravelModes />
       <TravelAssistant />
       <WhyGoSphere />
@@ -277,3 +358,4 @@ function Home() {
 }
 
 export default Home
+

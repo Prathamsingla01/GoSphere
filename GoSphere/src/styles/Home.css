@@ -478,3 +478,137 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================
+   Evaluation 2: Recent Searches Cards (Train / Flight / Bus)
+   ============================================ */
+.recent-search-section {
+  padding-top: 0;
+  padding-bottom: 28px;
+}
+
+.recent-search-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 28px;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  background: var(--glass-bg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.recent-search-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Train variant */
+.recent-search-card.recent-train {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.recent-search-card.recent-train:hover {
+  box-shadow: 0 20px 50px var(--train-glow);
+}
+
+.recent-search-card.recent-train .recent-search-icon {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--train);
+}
+
+.recent-search-card.recent-train .eyebrow {
+  color: var(--train);
+}
+
+/* Flight variant */
+.recent-search-card.recent-flight {
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.recent-search-card.recent-flight:hover {
+  box-shadow: 0 20px 50px var(--flight-glow);
+}
+
+.recent-search-card.recent-flight .recent-search-icon {
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--flight);
+}
+
+.recent-search-card.recent-flight .eyebrow {
+  color: var(--flight);
+}
+
+/* Bus variant */
+.recent-search-card.recent-bus {
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+.recent-search-card.recent-bus:hover {
+  box-shadow: 0 20px 50px var(--bus-glow);
+}
+
+.recent-search-card.recent-bus .recent-search-icon {
+  background: rgba(251, 146, 60, 0.12);
+  color: var(--bus);
+}
+
+.recent-search-card.recent-bus .eyebrow {
+  color: var(--bus);
+}
+
+.recent-search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  font-size: 27px;
+}
+
+.recent-search-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-search-copy .eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.recent-search-copy h2 {
+  margin: 6px 0;
+  font-size: 1.25rem;
+}
+
+.recent-search-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.recent-search-button {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 620px) {
+  .recent-search-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 18px;
+  }
+  .recent-search-copy {
+    flex-basis: calc(100% - 76px);
+  }
+  .recent-search-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

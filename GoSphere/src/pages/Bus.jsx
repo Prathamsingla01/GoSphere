@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { saveTrip, removeTrip } from "../redux/travelSlice.js";
 import BookingForm from "../components/BookingForm.jsx";
+import { validateManualDate } from "../utils/dateUtils.js";
 import "../styles/Bus.css";
 
 // ============================================
@@ -191,10 +192,12 @@ function BusHero() {
 }
 
 function BusSearch({ onSearch }) {
-  const [fromCity, setFromCity] = useState("Chandigarh");
-  const [toCity, setToCity] = useState("Delhi");
-  const [date, setDate] = useState("");
-  const [busType, setBusType] = useState("All");
+  const { latestBusSearch, setLatestBusSearch } = useSearchContext();
+  const [fromCity, setFromCity] = useState(latestBusSearch?.fromCity || "Chandigarh");
+  const [toCity, setToCity] = useState(latestBusSearch?.toCity || "Delhi");
+  const [date, setDate] = useState(latestBusSearch?.date || "");
+  const [busType, setBusType] = useState(latestBusSearch?.busType || "All");
+  const [error, setError] = useState("");
 
   const types = ["All", "Sleeper", "Seater", "AC", "Non-AC"];
 
@@ -202,10 +205,32 @@ function BusSearch({ onSearch }) {
     const temp = fromCity;
     setFromCity(toCity);
     setToCity(temp);
+    setError("");
   }
 
-  function handleSearchClick() {
-    onSearch({ fromCity, toCity, date, busType });
+  function handleSearchClick(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const cleanFrom = fromCity.trim();
+    const cleanTo = toCity.trim();
+    if (!cleanFrom || !cleanTo) {
+      setError("Please enter both departure and destination cities.");
+      return;
+    }
+    if (cleanFrom.toLowerCase() === cleanTo.toLowerCase()) {
+      setError("Departure and destination cities must be different.");
+      return;
+    }
+
+    const dateResult = validateManualDate(date);
+    if (!dateResult.valid) {
+      setError(dateResult.error);
+      return;
+    }
+
+    setError("");
+    const searchData = { fromCity: cleanFrom, toCity: cleanTo, date: dateResult.date, busType };
+    setLatestBusSearch(searchData);
+    onSearch(searchData);
   }
 
   return (
@@ -218,7 +243,10 @@ function BusSearch({ onSearch }) {
               type="text"
               placeholder="Chandigarh"
               value={fromCity}
-              onChange={(e) => setFromCity(e.target.value)}
+              onChange={(e) => {
+                setFromCity(e.target.value);
+                setError("");
+              }}
             />
           </div>
 
@@ -232,16 +260,23 @@ function BusSearch({ onSearch }) {
               type="text"
               placeholder="Delhi"
               value={toCity}
-              onChange={(e) => setToCity(e.target.value)}
+              onChange={(e) => {
+                setToCity(e.target.value);
+                setError("");
+              }}
             />
           </div>
 
           <div className="field">
             <label>Travel Date</label>
             <input
-              type="date"
+              type="text"
+              placeholder="DD-MM-YYYY"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => {
+                setDate(e.target.value);
+                setError("");
+              }}
             />
           </div>
         </div>
@@ -260,6 +295,12 @@ function BusSearch({ onSearch }) {
             ))}
           </div>
         </div>
+
+        {error && (
+          <p style={{ color: "#f87171", fontSize: "0.85rem", marginTop: "10px" }} role="alert">
+            {error}
+          </p>
+        )}
 
         <button className="search-btn" onClick={handleSearchClick}>
           Search Buses
@@ -566,7 +607,7 @@ export default function Bus() {
   const savedTrips = useSelector((state) => state.travel.savedTrips);
 
   // Shared search context — stores the latest bus search
-  const { setLatestBusSearch } = useSearchContext();
+  const { latestBusSearch, setLatestBusSearch } = useSearchContext();
   const { recordSearch, recordSeenTicket } = useAppContext();
 
   const handleSearch = (searchValues) => {
@@ -614,6 +655,9 @@ export default function Bus() {
       from: bus.from,
       to: bus.to,
       price: bus.price,
+      depTime: bus.departureTime,
+      arrTime: bus.arrivalTime,
+      classes: ["Standard Seater", "AC Sleeper"],
     });
   };
 
@@ -625,7 +669,10 @@ export default function Bus() {
   return (
     <div className="bus-page">
       <BusHero />
-      <BusSearch onSearch={handleSearch} />
+      <BusSearch
+        key={latestBusSearch ? `${latestBusSearch.fromCity}-${latestBusSearch.toCity}-${latestBusSearch.date}` : 'bus-search'}
+        onSearch={handleSearch}
+      />
 
       {hasSearched && (
         <BusResults
@@ -648,6 +695,7 @@ export default function Bus() {
 
       {/* Controlled booking form modal */}
       <BookingForm
+        key={bookingTrip ? `${bookingTrip.mode}-${bookingTrip.name}-${bookingTrip.price}` : 'booking-modal'}
         trip={bookingTrip}
         isOpen={Boolean(bookingTrip)}
         onClose={() => setBookingTrip(null)}

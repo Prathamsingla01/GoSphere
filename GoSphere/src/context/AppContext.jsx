@@ -4,105 +4,19 @@ import { createContext, useState, useContext } from 'react';
 // 1. Create the Context object
 export const AppContext = createContext();
 
-// Pre-seeded initial data so the Context API immediately showcases recent seen ticket and searches
-const defaultRecentSearches = [
-  {
-    id: 'search-train-del-chd',
-    mode: 'Train',
-    from: 'Delhi',
-    to: 'Chandigarh',
-    date: '2026-10-28',
-    summary: 'Delhi ➔ Chandigarh',
-    icon: '🚆',
-    timestamp: 'Today',
-  },
-  {
-    id: 'search-flight-del-bom',
-    mode: 'Flight',
-    from: 'Delhi',
-    to: 'Mumbai',
-    date: '2026-10-30',
-    summary: 'Delhi ➔ Mumbai',
-    icon: '✈️',
-    timestamp: 'Yesterday',
-  },
-  {
-    id: 'search-bus-del-mnl',
-    mode: 'Bus',
-    from: 'Delhi',
-    to: 'Manali',
-    date: '2026-11-02',
-    summary: 'Delhi ➔ Manali',
-    icon: '🚌',
-    timestamp: '3 days ago',
-  },
-];
-
-// Pre-seeded initial recently seen tickets to show before ticket confirmation
-const defaultRecentTickets = [
-  {
-    id: 'train-1',
-    mode: 'Train',
-    name: 'Vande Bharat Express',
-    number: '22439',
-    from: 'Delhi',
-    to: 'Chandigarh',
-    depTime: '06:00 AM',
-    arrTime: '09:20 AM',
-    durationLabel: '3h 20m',
-    price: 850,
-    classes: ['Executive Chair Car', 'AC Chair Car'],
-    score: 94,
-    facilities: ['❄️ AC', '🔌 Charging', '🍽️ Food', '🪑 Comfortable Seating'],
-    statusLabel: 'Recently Viewed Ticket',
-  },
-  {
-    id: 'flight-1',
-    mode: 'Flight',
-    name: 'IndiGo (6E 234)',
-    number: '6E 234',
-    from: 'Delhi',
-    to: 'Mumbai',
-    depTime: '08:30 AM',
-    arrTime: '10:40 AM',
-    durationLabel: '2h 10m',
-    price: 4299,
-    classes: ['Economy'],
-    score: 92,
-    facilities: ['📶 Entertainment', '🍽️ Meals', '🔌 Charging', '🧳 Cabin Baggage'],
-    statusLabel: 'Recent Search Result',
-  },
-  {
-    id: 'bus-1',
-    mode: 'Bus',
-    name: 'Zingbus Plus (Volvo AC Sleeper)',
-    number: 'ZB-402',
-    from: 'Delhi',
-    to: 'Manali',
-    depTime: '08:00 PM',
-    arrTime: '08:30 AM',
-    durationLabel: '12h 30m',
-    price: 1250,
-    classes: ['AC Sleeper (2+1)'],
-    score: 88,
-    facilities: ['❄️ AC', '🔌 Charging', '💺 Reclining Sleeper', '💧 Water Bottle'],
-    statusLabel: 'Recent Search Result',
-  },
-];
-
 // 2. Create the Provider component to wrap the application
 export function AppProvider({ children }) {
   // Shared state: stores the confirmed travel booking inquiry (null = unconfirmed)
   const [booking, setBooking] = useState(null);
 
-  // Shared state: recent searches performed across Train, Flight, Bus
-  const [recentSearches, setRecentSearches] = useState(defaultRecentSearches);
+  // Shared state: recent searches performed across Train, Flight, Bus (empty by default)
+  const [recentSearches, setRecentSearches] = useState([]);
 
-  // Shared state: list of recently seen/inspected tickets
-  const [recentSeenTickets, setRecentSeenTickets] = useState(defaultRecentTickets);
+  // Shared state: list of recently seen/inspected tickets (empty by default)
+  const [recentSeenTickets, setRecentSeenTickets] = useState([]);
 
-  // Shared state: active recent seen ticket (displayed before ticket confirmation)
-  const [recentSeenTicket, setRecentSeenTicket] = useState(defaultRecentTickets[0]);
+  // Shared state: active recent seen ticket (null until user interacts)
+  const [recentSeenTicket, setRecentSeenTicket] = useState(null);
 
   // Record a new search inquiry in Context API
   function recordSearch(searchData) {
