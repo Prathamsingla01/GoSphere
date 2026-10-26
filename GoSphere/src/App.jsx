@@ -6,7 +6,6 @@ import { SearchProvider } from './context/SearchContext.jsx';
 
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
-import ActiveBookingBanner from './components/ActiveBookingBanner.jsx';
 
 import Home from './pages/Home.jsx';
 import Train from './pages/Train.jsx';
@@ -25,8 +24,6 @@ function App() {
         <Router>
           <div id="app-container">
             <Navbar />
-            {/* Visual banner for Context API shared booking state */}
-            <ActiveBookingBanner />
             <main>
               <Routes>
                 <Route path="/" element={<Home />} />

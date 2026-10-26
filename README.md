@@ -64,7 +64,7 @@ npm run build
 - **Provider Component (`AppProvider`)**: Manages `booking` state using `useState`, exposing `saveBooking()` and `cancelBooking()`.
 - **Application Wrapper (`GoSphere/src/App.jsx`)**: Wraps the route tree with `<AppProvider>`.
 - **Consumer Components**:
-  - `GoSphere/src/components/ActiveBookingBanner.jsx`: Uses `useContext(AppContext)` to render the active booking summary and cancel button across pages.
+  - `GoSphere/src/components/ActiveBookingBanner.jsx`: Uses `useContext(AppContext)` to render the active booking summary and cancel button on the Home page under the Start Exploring section.
   - `GoSphere/src/components/BookingForm.jsx`: Calls `saveBooking()` to record confirmed client-side reservations.
 
 ### C. Redux Toolkit (`GoSphere/src/redux/`)

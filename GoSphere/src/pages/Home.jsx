@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import ActiveBookingBanner from '../components/ActiveBookingBanner.jsx'
 import '../styles/Home.css'
 
 // ============================================
@@ -266,6 +267,8 @@ function Home() {
   return (
     <div className="home-page">
       <Hero />
+      {/* Context API Active Booking Banner rendered under Start Exploring section */}
+      <ActiveBookingBanner />
       <TravelModes />
       <TravelAssistant />
       <WhyGoSphere />
