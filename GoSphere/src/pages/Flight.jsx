@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSearchContext } from '../context/SearchContext.jsx';
+import { useAppContext } from '../context/AppContext.jsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { saveTrip, removeTrip } from '../redux/travelSlice.js';
 import BookingForm from '../components/BookingForm.jsx';
@@ -600,10 +601,21 @@ export default function Flight() {
 
   // Shared search context — stores the latest flight search
   const { setLatestFlightSearch } = useSearchContext();
+  const { recordSearch, recordSeenTicket } = useAppContext();
 
   function handleSearch(searchDetails) {
     setLatestFlightSearch(searchDetails);
     setTripInfo(searchDetails);
+    recordSearch({
+      mode: 'Flight',
+      from: searchDetails.fromCity || 'Delhi',
+      to: searchDetails.toCity || 'Mumbai',
+      date: searchDetails.date,
+      travelClass: searchDetails.travelClass,
+    });
+    if (flightData && flightData.length > 0) {
+      recordSeenTicket(flightData[0]);
+    }
     setHasSearched(true);
   }
 
@@ -629,6 +641,7 @@ export default function Flight() {
   }
 
   function handleBook(flight) {
+    recordSeenTicket(flight);
     setBookingTrip({
       name: `${flight.airline} (${flight.flightNumber})`,
       mode: 'Flight',

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchContext } from "../context/SearchContext.jsx";
+import { useAppContext } from "../context/AppContext.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { saveTrip, removeTrip } from "../redux/travelSlice.js";
 import BookingForm from "../components/BookingForm.jsx";
@@ -566,10 +567,21 @@ export default function Bus() {
 
   // Shared search context — stores the latest bus search
   const { setLatestBusSearch } = useSearchContext();
+  const { recordSearch, recordSeenTicket } = useAppContext();
 
   const handleSearch = (searchValues) => {
     setLatestBusSearch(searchValues);
     setSelectedBusType(searchValues.busType);
+    recordSearch({
+      mode: "Bus",
+      from: searchValues.fromCity || "Delhi",
+      to: searchValues.toCity || "Manali",
+      date: searchValues.date,
+      busType: searchValues.busType,
+    });
+    if (busData && busData.length > 0) {
+      recordSeenTicket(busData[0]);
+    }
     setHasSearched(true);
   };
 
@@ -595,6 +607,7 @@ export default function Bus() {
   };
 
   const handleBook = (bus) => {
+    recordSeenTicket(bus);
     setBookingTrip({
       name: `${bus.operator} (${bus.type})`,
       mode: "Bus",

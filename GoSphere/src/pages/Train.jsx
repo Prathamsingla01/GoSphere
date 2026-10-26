@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchContext } from "../context/SearchContext.jsx";
+import { useAppContext } from "../context/AppContext.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { saveTrip, removeTrip } from "../redux/travelSlice.js";
 import BookingForm from "../components/BookingForm.jsx";
@@ -471,9 +472,19 @@ export default function Train() {
 
   // Shared search context — stores the latest train search
   const { setLatestSearch } = useSearchContext();
+  const { recordSearch, recordSeenTicket } = useAppContext();
 
   function handleSearch(searchValues) {
     setLatestSearch(searchValues);
+    recordSearch({
+      mode: "Train",
+      from: searchValues.from || "Delhi",
+      to: searchValues.to || "Chandigarh",
+      date: searchValues.date,
+    });
+    if (trainsData && trainsData.length > 0) {
+      recordSeenTicket(trainsData[0]);
+    }
     setSearched(true);
   }
 
@@ -499,6 +510,7 @@ export default function Train() {
   }
 
   function handleBook(train) {
+    recordSeenTicket(train);
     setBookingTrip({
       name: train.name,
       mode: "Train",

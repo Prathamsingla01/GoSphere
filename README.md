@@ -58,14 +58,24 @@ npm run build
   - `*` — **404 Not Found Page** (`GoSphere/src/pages/NotFound.jsx`): Graceful fallback for invalid routes with a return link to Home.
 - **Shared Navigation Bar (`GoSphere/src/components/Navbar.jsx`)**: Uses `NavLink` with dynamic active class styling (`isActive`) to highlight the current page.
 
-### B. React Context API (`GoSphere/src/context/AppContext.jsx`)
-- **Purpose**: Shares active booking reservation state across pages without prop drilling.
-- **Context Definition**: `createContext()` creates `AppContext`.
-- **Provider Component (`AppProvider`)**: Manages `booking` state using `useState`, exposing `saveBooking()` and `cancelBooking()`.
+### B. React Context API (`GoSphere/src/context/AppContext.jsx` & `GoSphere/src/context/TicketContext.jsx`)
+- **Purpose**: Global state management that dynamically handles travel reservation lifecycles across pages without prop drilling:
+  - **Before Ticket Confirmation**: Context API tracks and displays **recent searches** (`recentSearches`) and the **most recently seen / inspected ticket** (`recentSeenTicket`), with options to switch between inspected tickets or proceed with instant confirmation.
+  - **After Ticket Confirmation**: Upon completing the booking form, Context API transitions to store and display the active **confirmed reservation** (`booking`) with booking ID, passenger details, route, fare breakdown, and verifiable digital pass.
+  - **Cancellation / Reset**: Calling `cancelBooking()` clears `booking` and seamlessly restores the before-confirmation view displaying recent searches.
+- **Context Definition**: `createContext()` creates `AppContext` (aliased as `TicketContext` in `TicketContext.jsx`).
+- **Provider Component (`AppProvider`)**: Manages `booking`, `recentSearches`, `recentSeenTicket`, and `recentSeenTickets` using React `useState`, exposing:
+  - `saveBooking(bookingData)` — Confirms ticket and records reservation.
+  - `cancelBooking()` — Clears confirmed booking back to recent searches view.
+  - `recordSearch(searchData)` — Records search queries across Train, Flight, and Bus.
+  - `recordSeenTicket(ticketData)` — Records viewed/inspected journey.
+  - `selectRecentTicket(ticket)` — Switches active seen ticket preview.
 - **Application Wrapper (`GoSphere/src/App.jsx`)**: Wraps the route tree with `<AppProvider>`.
 - **Consumer Components**:
-  - `GoSphere/src/components/ActiveBookingBanner.jsx`: Uses `useContext(AppContext)` to render the active booking summary and cancel button on the Home page under the Start Exploring section.
-  - `GoSphere/src/components/BookingForm.jsx`: Calls `saveBooking()` to record confirmed client-side reservations.
+  - `GoSphere/src/components/ActiveBookingBanner.jsx`: Uses `useContext(AppContext)` to render the dual-state ticket banner on the Home page under the Hero section.
+  - `GoSphere/src/components/Navbar.jsx`: Uses `useAppContext()` to render live Context API status badge (`👁 Recent: [Ticket]` before confirmation, `✓ Confirmed ([ID])` after confirmation).
+  - `GoSphere/src/components/BookingForm.jsx`: Calls `saveBooking()` to record confirmed client-side reservations into Context API.
+  - `GoSphere/src/pages/Train.jsx`, `GoSphere/src/pages/Flight.jsx`, `GoSphere/src/pages/Bus.jsx`: Call `recordSearch()` and `recordSeenTicket()` upon searching and viewing journeys.
 
 ### C. Redux Toolkit (`GoSphere/src/redux/`)
 - **Purpose**: Manages user-shortlisted journeys across Train, Flight, and Bus options.

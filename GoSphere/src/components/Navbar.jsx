@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useAppContext } from '../context/AppContext.jsx';
 import SavedTripsModal from './SavedTripsModal.jsx';
 
 const navLinks = [
@@ -16,6 +17,9 @@ function Navbar() {
 
   // Read saved trips count from Redux store using useSelector
   const savedCount = useSelector((state) => state.travel.savedTrips.length);
+
+  // Read Context API live ticket state (before vs after confirmation)
+  const { booking, recentSeenTicket } = useAppContext();
 
   function toggleMenu() {
     setMenuOpen(!menuOpen);
@@ -48,6 +52,25 @@ function Navbar() {
           </nav>
 
           <div className="navbar-actions navbar-actions-desktop">
+            {/* Live Context API Ticket Status Indicator */}
+            {booking ? (
+              <NavLink
+                to="/"
+                className="navbar-ticket-badge confirmed"
+                title={`Context API Confirmed Ticket: ${booking.bookingId}`}
+              >
+                <span className="pulsing-dot-green" /> ✓ Confirmed ({booking.bookingId})
+              </NavLink>
+            ) : recentSeenTicket ? (
+              <NavLink
+                to="/"
+                className="navbar-ticket-badge unconfirmed"
+                title={`Context API Recent Ticket: ${recentSeenTicket.name}`}
+              >
+                <span>👁 Recent: {recentSeenTicket.name.length > 15 ? recentSeenTicket.name.slice(0, 15) + '…' : recentSeenTicket.name}</span>
+              </NavLink>
+            ) : null}
+
             {/* Redux State trigger: Shortlisted Trips */}
             <button
               type="button"
@@ -88,6 +111,26 @@ function Navbar() {
                 {link.label}
               </NavLink>
             ))}
+
+            {/* Context API Ticket Status in Mobile Menu */}
+            {booking ? (
+              <NavLink
+                to="/"
+                className="navbar-ticket-badge confirmed mobile"
+                onClick={closeMenu}
+              >
+                <span className="pulsing-dot-green" /> ✓ Confirmed Ticket: {booking.bookingId}
+              </NavLink>
+            ) : recentSeenTicket ? (
+              <NavLink
+                to="/"
+                className="navbar-ticket-badge unconfirmed mobile"
+                onClick={closeMenu}
+              >
+                <span>👁 Recently Seen: {recentSeenTicket.name}</span>
+              </NavLink>
+            ) : null}
+
             <button
               type="button"
               className="btn-ghost"
